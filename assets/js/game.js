@@ -2,7 +2,17 @@ class Game{
     constructor(){
         this.name = name;
         this.$zone =$('.elements');
+        this.elements = []
+        this.player = this.generate(Player)
     }
+
+    updateElements(){
+        this.elements.forEach(e => {
+            e.update();
+            e.draw();
+        })
+    }
+
     setParams(){
         let params = ['name'],
         value = [this.name];
@@ -14,6 +24,7 @@ class Game{
 
     loop(){
         requestAnimationFrame(() =>{
+            this.updateElements();
             this.setParams();
             this.loop();
         })
@@ -44,7 +55,57 @@ class Drawable{
     }
 
     update(){
-        
+        if(this.keys.ArrowLeft && this.x > 0){
+            this.offsets.x = -speedPerFrame;
+        }else if(this.keys.ArrowRight && this.x < this.game.$zone.width() - this.w){
+            this.offsets.x = this.speedPerFrame;
+        }else{
+            this.offsets.x = 0;
+        }
+        super.update();
+    }
+
+    draw(){
+        this.$element.css({
+            left: this.x + 'px',
+            top: this.y +'px',
+            width: this.w + 'px',
+            height: this.h + 'px'
+        })
+    }
+}
+
+class Player extends Drawable{
+    constructor(game){
+        super(game);
+        this.w = 244;
+        this.h = 109;
+        this.x = this.game.$zone.width() / 2 - this.w / 2;
+        this.y = this.game.$zone.height() - this.h;
+        this.speedPerFrame = 20
+        this.keys = {
+            ArrowLeft: false,
+            ArrowRight: false
+        }
+        this.createElement();
+        this.bindKeyEvents()
+    }
+
+    generate(className){
+        let element = new className(this);
+        this.elements.push(element);
+        return element
+    }
+
+    bindKeyEvents(){
+        document.addEventListener('keydown', ev => this.changeKeyStatus(ev.code, true))
+        document.addEventListener('keyup', ev => this.changeKeyStatus(ev.code, false))
+    }
+
+    changeKeyStatus(code, value){
+        if(code in this.keys){
+            this.keys[code] = value
+        }
     }
 }
 
